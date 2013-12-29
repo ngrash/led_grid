@@ -2,19 +2,20 @@
 
 #define INITIAL_BRIGHTNESS 10
 #define NUM_LEDS 168
-#define GRID_HEIGHT 13
-#define GRID_WIDTH 13
+
+#define DEBUG
 
 #define CMD_SHOW  0x01
 #define CMD_CLEAR  0x02
 #define CMD_COLOR  0x03
 #define CMD_SELECT 0x04
 
-byte cmdRead;
-
 CRGB leds[NUM_LEDS];
-
 CRGB* currLed = NULL;
+CRGB rgb;
+
+byte cmd;
+byte ledIndex; 
 
 void setup() {
   delay(200);
@@ -22,7 +23,7 @@ void setup() {
   LEDS.setBrightness(INITIAL_BRIGHTNESS);
   LEDS.addLeds<WS2811, 13, GRB>(leds, NUM_LEDS);
   
-  Serial.begin(9600);
+  Serial.begin(250000);
   
   establishContact();
   
@@ -30,25 +31,20 @@ void setup() {
 }
 
 void loop() {
-  Serial.println("begin new loop");
-  
-  byte cmd;
-  byte ledIndex;
-  
-  CRGB rgb;
+//  Serial.println("begin new loop");
   
   cmd = readByte();  
   switch(cmd) {
     case CMD_SHOW:
-      Serial.println("received CMD_SHOW");
+//      Serial.println("received CMD_SHOW");
       LEDS.show();
       break;
     case CMD_CLEAR:
-      Serial.println("received CMD_CLEAR");
+//      Serial.println("received CMD_CLEAR");
       memset(leds, 0,  NUM_LEDS * sizeof(struct CRGB));
       break;
     case CMD_COLOR:
-      Serial.println("received CMD_COLOR");
+//      Serial.println("received CMD_COLOR");
       rgb.r = readByte();
       rgb.g = readByte();
       rgb.b = readByte();
@@ -67,7 +63,7 @@ void loop() {
       }
       break;
     case CMD_SELECT:
-      Serial.println("received CMD_SELECT");
+//      Serial.println("received CMD_SELECT");
       ledIndex = readByte();
       if(ledIndex >= 0 && ledIndex < NUM_LEDS) {
         currLed = &leds[ledIndex];
@@ -85,7 +81,7 @@ void loop() {
 
 byte readByte() {
   byte byteRead;
-  Serial.write("waiting for input\n");
+//  Serial.write("waiting for input\n");
   while(!Serial.available()) {  }
   byteRead = Serial.read();
   return byteRead;
