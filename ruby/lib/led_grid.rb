@@ -6,6 +6,8 @@ class LedGrid
 	CMD_SET = 0x03
 	CMD_FILL = 0x04
 
+	attr_accessor :auto_show
+
 	def initialize(height, width, serial_port = nil)
 		@height = height
 		@width = width
@@ -52,6 +54,8 @@ class LedGrid
 		send CMD_SET
 		send index
 		send_rgb rgb
+
+		show if @auto_show
 	end
 
 	def get(x, y)
@@ -69,21 +73,29 @@ class LedGrid
 	def fill(rgb)
 		send CMD_FILL
 		send_rgb rgb
+
+		show if @auto_show
 	end
 
 	def show()
 		send CMD_SHOW
+		sleep 0.1
 	end
 
 	def clear()
 		send CMD_CLEAR
+		show if @auto_show
 	end
 
 	private
 	def coord_to_index(x, y)
-		rows = y * @width
-		cols = row.modulo(2) == 0 ? x : @width - x
-		rows + cols
+		i = y * @width
+
+		if y.modulo(2) == 0
+			i + x
+		else
+			i + @width - x - 1
+		end
 	end
 
 	def send_rgb(rgb)
@@ -93,6 +105,13 @@ class LedGrid
 	end
 
 	def send(ch)
+		@count ||= 0
+		@count += 1
+		if @count == 40 || ch == CMD_SHOW
+			sleep 0.03
+			@count = 0
+		end
+
 		#puts "> 0x#{ch.to_s(16)}"
 		@serial_port.putc ch
 	end

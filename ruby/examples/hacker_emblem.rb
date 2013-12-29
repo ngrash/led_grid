@@ -3,34 +3,35 @@ $LOAD_PATH.unshift File.dirname(__FILE__)+"/../lib"
 require "led_grid"
 
 banner = <<-banner
-    ###    
-    ###    
-    ###    
-
-        ###
-        ###
-        ###
-
-### ### ###
-### ### ###
-### ### ###
+            
+     ###    
+     ###    
+     ###    
+            
+         ###
+         ###
+         ###
+            
+ ### ### ###
+ ### ### ###
+ ### ### ###
 banner
 
 leds = LedGrid.new(13, 13)
-leds.start_listener
+#leds.start_listener
 
-sleep 1
+#leds.auto_show = true
 
 leds.clear
 leds.show
 
-banner.chars.each_with_index do |ch, i|
-	leds[i] = { b: 100 } if ch == '#'
-
-	leds.show if i.modulo(10) == 0
-
-	sleep 0.5
+banner.lines.each_with_index do |row, row_index|
+	row.chomp.chars.each_with_index do |ch, col_index|
+		if ch == '#'
+			leds.set(col_index, row_index, { b: 100 }) 
+		end
+	end
 end
 
 leds.show
-leds.stop_listener
+#leds.stop_listener

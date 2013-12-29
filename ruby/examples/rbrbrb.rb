@@ -17,9 +17,6 @@ while true
 
 	leds.show
 
-	# Wait before changing color again
-	sleep 0.01
-
 	i += 1
 end
 
