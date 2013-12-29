@@ -1,19 +1,19 @@
 require "serialport"
 
 class LedGrid
-	CMD_SHOW = 0x01
+	CMD_SHOW  = 0x01
 	CMD_CLEAR = 0x02
-	CMD_SET = 0x03
-	CMD_FILL = 0x04
-
-	attr_accessor :auto_show
+	CMD_SET   = 0x03
+	CMD_FILL  = 0x04
+	CMD_FRAME = 0x05
+	CMD_DUMP  = 0x06
 
 	def initialize(height, width, serial_port = nil)
 		@height = height
 		@width = width
 
 		if serial_port.nil?
-			@serial_port = SerialPort.new("/dev/ttyUSB0", 115200, 8, 1, SerialPort::NONE)
+			@serial_port = SerialPort.new("/dev/ttyUSB0", 19200, 8, 1, SerialPort::NONE)
 		else
 			@serial_port = serial_port
 		end
@@ -40,54 +40,54 @@ class LedGrid
 		@listener_thread.join
 	end
 
-	def [](index)
+	def get(index)
 		@leds[index]
 	end
 
-	def []=(index, rgb)
-		if index >= 0
-			@leds[index] = rgb
-		end
-
-		index -= 1
-
-		send CMD_SET
-		send index
-		send_rgb rgb
-
-		show if @auto_show
+	def set(index, rgb)
+		@leds[index] = rgb
 	end
 
 	def get(x, y)
 		index = coord_to_index(x, y)
-		puts index
 		@leds[index]
 	end
 
 	def set(x, y, rgb)
 		index = coord_to_index(x, y)
-		puts index
-		self.[]=(index, rgb)
+		@leds[index] = rgb
 	end
 
 	def fill(rgb)
 		send CMD_FILL
 		send_rgb rgb
-
-		show if @auto_show
 	end
 
 	def show()
-		send CMD_SHOW
-		sleep 0.1
+		frame(@leds)
 	end
 
 	def clear()
+		@leds = []
 		send CMD_CLEAR
-		show if @auto_show
+	end
+
+	def frame(rgbs)
+		send CMD_FRAME
+
+		(@width * @height).times.each do |i|
+			r = i / @width
+			if r.modulo(2) == 0
+				send_rgb rgbs[i] || {}
+			else
+				c = i % @width
+				send_rgb rgbs[i - 2 * c + @width - 1] || {}
+			end
+		end
 	end
 
 	private
+
 	def coord_to_index(x, y)
 		i = y * @width
 
@@ -105,14 +105,10 @@ class LedGrid
 	end
 
 	def send(ch)
-		@count ||= 0
-		@count += 1
-		if @count == 40 || ch == CMD_SHOW
-			sleep 0.03
-			@count = 0
-		end
+		@cmd_counter ||= 0
+		@cmd_counter += 1
 
-		#puts "> 0x#{ch.to_s(16)}"
+		puts "> 0x#{ch.to_s(16)}"
 		@serial_port.putc ch
 	end
 end
