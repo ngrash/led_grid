@@ -17,6 +17,8 @@ while true
 
 	leds.show
 
+	sleep 1 / 35
+
 	i += 1
 end
 
