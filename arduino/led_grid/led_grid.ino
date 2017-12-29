@@ -13,25 +13,25 @@
 CRGB leds[NUM_LEDS];
 CRGB rgb;
 byte cmd;
-byte ledIndex; 
+byte ledIndex;
 
 void setup() {
   delay(200);
-   
+
   LEDS.setBrightness(INITIAL_BRIGHTNESS);
   LEDS.addLeds<WS2811, 13, GRB>(leds, NUM_LEDS);
   LEDS.show();
-  
+
   Serial.begin(19200);
-  
+
   establishContact();
-  
+
   Serial.println("hai");
 }
 
 void loop() {
   //Serial.println("new loop");
-  cmd = readByte();  
+  cmd = readByte();
   switch(cmd) {
     case CMD_SHOW:
       //Serial.println("received CMD_SHOW");
@@ -40,7 +40,7 @@ void loop() {
     case CMD_CLEAR:
       //Serial.println("received CMD_CLEAR");
       memset(leds, 0, NUM_LEDS * sizeof(struct CRGB));
-      
+
       LEDS.show();
       break;
     case CMD_FILL:
@@ -51,7 +51,7 @@ void loop() {
         leds[i].g = rgb.g;
         leds[i].b = rgb.b;
       }
-      
+
       LEDS.show();
       break;
     case CMD_SET:
@@ -60,25 +60,25 @@ void loop() {
       ledIndex--; // because the first LED is broken
       //Serial.print("idx: ");
       //Serial.println(ledIndex);
-      
+
       if(ledIndex < 0 && ledIndex >= NUM_LEDS) {
         Serial.println("WARNING: led index out of range. Canceling CMD_SET.");
         break;
       }
-      
+
       readRgb(&rgb);
       leds[ledIndex].r = rgb.r;
       leds[ledIndex].g = rgb.g;
       leds[ledIndex].b = rgb.b;
-      
+
       LEDS.show();
-      break;  
+      break;
     case CMD_FRAME:
       //Serial.println("received CMD_FRAME");
 
       // ignorethe first LED because its broken
       readRgb(&rgb);
-      
+
       for(int i = 0; i < NUM_LEDS; i++)
       {
         readRgb(&rgb);
@@ -86,7 +86,7 @@ void loop() {
         leds[i].g = rgb.g;
         leds[i].b = rgb.b;
       }
-      
+
       LEDS.show();
       break;
     case CMD_DUMP:

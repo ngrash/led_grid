@@ -7,19 +7,19 @@ leds.start_listener
 
 i = 0
 while true
-	puts "##{i}"
+  puts "##{i}"
 
-	if i.modulo(2) == 0
-		leds.fill(r: 255)
-	else
-		leds.fill(b: 255)
-	end
+  if i.modulo(2) == 0
+    leds.fill(r: 255)
+  else
+    leds.fill(b: 255)
+  end
 
-	leds.show
+  leds.show
 
-	sleep 1 / 35
+  sleep 1 / 35
 
-	i += 1
+  i += 1
 end
 
 leds.stop_listener
